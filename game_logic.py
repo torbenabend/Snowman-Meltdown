@@ -10,11 +10,35 @@ from ascii_art import STAGES
 
 # List of secret words
 WORDS = ["python", "git", "github", "snowman", "meltdown"]
+MAX_MISTAKES = len(STAGES) - 1
 
 
 def get_random_word():
     """Select a random word from the list."""
-    return WORDS[random.randint(0, len(WORDS) - 1)]
+    return random.choice(WORDS)
+
+
+def get_display_word(secret_word, guessed_letters):
+    """
+    Create a formatted string showing the current guessing progress.
+
+    Reveals correctly guessed letters and replaces
+    remaining letters with underscores.
+
+    Args:
+        secret_word (str): The word to guess.
+        guessed_letters (set[str]): Letters guessed so far.
+
+    Returns:
+        str: The formatted word with spaces between characters.
+    """
+    display_word = ""
+    for char in secret_word:
+        if char in guessed_letters:
+            display_word += char + " "
+        else:
+            display_word += "_ "
+    return display_word
 
 
 def display_game_state(mistakes, secret_word, guessed_letters):
@@ -24,16 +48,10 @@ def display_game_state(mistakes, secret_word, guessed_letters):
     Args:
     mistakes (int): Number of incorrect guesses.
     secret_word (str): The word to guess.
-    guessed_letters (list[str]): Correctly guessed letters.
+    guessed_letters (set[str]): Correctly guessed letters.
     """
     print(STAGES[mistakes])
-    display_word = ""
-    for char in secret_word:
-        if char in guessed_letters:
-            display_word += char + " "
-        else:
-            display_word += "_ "
-    print("Word: ", display_word)
+    print("Word: ", get_display_word(secret_word, guessed_letters))
     print()
 
 
@@ -69,42 +87,79 @@ def wants_to_play_again():
         print("Invalid input! Please enter 'y' for yes and 'n' for no.\n")
 
 
+def has_lost(mistakes, max_mistakes):
+    """
+    Check whether the player has lost the game.
+
+    Args:
+        mistakes (int): Number of incorrect guesses made.
+        max_mistakes (int): Maximum allowed incorrect guesses.
+
+    Returns:
+        bool: True if the player reached the maximum mistakes, False otherwise.
+    """
+    return mistakes == max_mistakes
+
+
+def has_won(secret_word, guessed_letters):
+    """
+    Check whether the player has won the game.
+
+    Args:
+        secret_word (str): The word to guess.
+        guessed_letters (set[str]): Letters guessed so far.
+
+    Returns:
+        bool: True if all letters in the secret word have been guessed, False otherwise.
+    """
+    return guessed_letters == set(secret_word)
+
+
+def play_single_game():
+    """
+    Run a single game session of Snowman Meltdown.
+
+    Initializes the secret word, mistake counter, and guessed letters.
+    Loops until the player wins or loses, updating the game state
+    and displaying the snowman and guessed letters.
+    """
+    # INITIALIZE GAME
+    secret_word = get_random_word()
+    mistakes = 0
+
+    guessed_letters = set()
+    # GAME LOOP
+    while True:
+        display_game_state(mistakes, secret_word, guessed_letters)
+        user_guess = get_user_guess()
+        if user_guess in secret_word:
+            guessed_letters.add(user_guess)
+        else:
+            mistakes += 1
+        # CHECK WIN AND LOSS CONDITIONS
+        if has_lost(mistakes, MAX_MISTAKES):
+            print(f"\nGame over! The word was {secret_word}")
+            print(STAGES[-1])
+            break
+        if has_won(secret_word, guessed_letters):
+            print("\nCongratulations, you saved the snowman!")
+            break
+
+
 def play_game():
     """
-    Run the main game loop.
+    Run the full Snowman Meltdown game session.
 
-    Initializes the game state, processes guesses,
-    and ends when the player wins or exceeds
-    the allowed number of mistakes.
+    Greets the player, starts single game sessions, and
+    prompts after each game whether the player wants to
+    continue. Ends when the player chooses not to play again.
     """
     # WELCOME SCREEN
     print("Welcome to Snowman Meltdown!")
-    is_game_running = True
-    while is_game_running:
-        # INITIALIZE GAME
-        secret_word = get_random_word()
-        print(
-            "Secret word selected: " + secret_word)  # for testing, later remove this line
-        mistakes = 0
-        max_nr_mistakes = len(STAGES) - 1
-        guessed_letters = []
-        # GAME LOOP
-        while True:
-            display_game_state(mistakes, secret_word, guessed_letters)
-            user_guess = get_user_guess()
-            print("You guessed:", user_guess) # for testing, later remove this line
-            if user_guess in secret_word:
-                guessed_letters.append(user_guess)
-            else:
-                mistakes += 1
-            # CHECK WIN AND LOSS CONDITIONS
-            if mistakes == max_nr_mistakes:
-                print(f"\nGame over! The word was {secret_word}")
-                print(STAGES[-1])
-                is_game_running = wants_to_play_again()
-                break
-            if set(guessed_letters) == set(secret_word):
-                print("\nCongratulations, you saved the snowman!")
-                is_game_running = wants_to_play_again()
-                break
+    # START GAME
+    while True:
+        play_single_game()
+        if not wants_to_play_again():
+            break
+    # END GAME
     print("Ok, see you next time. Goodbye!")
