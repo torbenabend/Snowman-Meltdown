@@ -53,6 +53,22 @@ def get_user_guess():
         )
 
 
+def wants_to_play_again():
+    """
+    Ask the user whether to start a new game.
+
+    Returns:
+        bool: True, if user chooses to play again, False otherwise.
+    """
+    while True:
+        answer = input("Do you want to play again? (y/n): ").lower()
+        if answer == "y":
+            return True
+        if answer == "n":
+            return False
+        print("Invalid input! Please enter 'y' for yes and 'n' for no.\n")
+
+
 def play_game():
     """
     Run the main game loop.
@@ -63,26 +79,31 @@ def play_game():
     """
     # WELCOME SCREEN
     print("Welcome to Snowman Meltdown!")
-    # INITIALIZE GAME
-    secret_word = get_random_word()
-    print(
-        "Secret word selected: " + secret_word)  # for testing, later remove this line
-    mistakes = 0
-    guessed_letters = []
-    # GAME LOOP
-    while True:
-        display_game_state(mistakes, secret_word, guessed_letters)
-        user_guess = get_user_guess()
-        print("You guessed:", user_guess) # for testing, later remove this line
-        if user_guess in secret_word:
-            guessed_letters.append(user_guess)
-        else:
-            mistakes += 1
-        # CHECK WIN AND LOSS CONDITIONS
-        if mistakes > 2:
-            print(f"\nGame over! The word was {secret_word}")
-            print(STAGES[3])
-            break
-        if set(guessed_letters) == set(secret_word):
-            print("\nCongratulations, you saved the snowman!")
-            break
+    is_game_running = True
+    while is_game_running:
+        # INITIALIZE GAME
+        secret_word = get_random_word()
+        print(
+            "Secret word selected: " + secret_word)  # for testing, later remove this line
+        mistakes = 0
+        guessed_letters = []
+        # GAME LOOP
+        while True:
+            display_game_state(mistakes, secret_word, guessed_letters)
+            user_guess = get_user_guess()
+            print("You guessed:", user_guess) # for testing, later remove this line
+            if user_guess in secret_word:
+                guessed_letters.append(user_guess)
+            else:
+                mistakes += 1
+            # CHECK WIN AND LOSS CONDITIONS
+            if mistakes > 2:
+                print(f"\nGame over! The word was {secret_word}")
+                print(STAGES[3])
+                is_game_running = wants_to_play_again()
+                break
+            if set(guessed_letters) == set(secret_word):
+                print("\nCongratulations, you saved the snowman!")
+                is_game_running = wants_to_play_again()
+                break
+    print("Ok, see you next time. Goodbye!")
