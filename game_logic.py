@@ -86,6 +86,7 @@ def play_game():
         print(
             "Secret word selected: " + secret_word)  # for testing, later remove this line
         mistakes = 0
+        max_nr_mistakes = len(STAGES) - 1
         guessed_letters = []
         # GAME LOOP
         while True:
@@ -97,9 +98,9 @@ def play_game():
             else:
                 mistakes += 1
             # CHECK WIN AND LOSS CONDITIONS
-            if mistakes > 2:
+            if mistakes == max_nr_mistakes:
                 print(f"\nGame over! The word was {secret_word}")
-                print(STAGES[3])
+                print(STAGES[-1])
                 is_game_running = wants_to_play_again()
                 break
             if set(guessed_letters) == set(secret_word):
